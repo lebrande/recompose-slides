@@ -1,0 +1,748 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>Recompose - Jakub Pusiak | lebrande</title>
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/black.css">
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="lib/css/hybrid.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+
+        <!-- | -->
+
+				<section id="cover">
+          <h1>React Recompose</h1>
+          <p>HOCs Everywhere! <span class="fragment">*</span></p>
+          <div class="fragment">
+            <p>*not Hooks</p>
+            <img
+              src="./images/erik-tweet.jpg" alt="@lebrande profile"
+              style="max-height: 200px; display: block; margin: 0 auto 1em;"
+            />
+          </div>
+        </section>
+
+        <!-- | -->
+
+        <section id="lebrande">
+          <img
+            src="./images/lebrande-profile.jpg" alt="@lebrande profile"
+            style="max-height: 500px; display: block; margin: 0 auto 1em;"
+          />
+        </section>
+
+        <!-- | -->
+
+        <section id="intive">
+          <img
+            src="./images/intive-logo.jpg" alt="intive"
+            style="max-height: 500px; display: block; margin: 0 auto 1em;"
+          />
+        </section>
+
+        <!-- | -->
+
+				<section id="what-is-recompose">
+          <section id="hocs-list">
+            <h3>What is recompose?</h3>
+            <div class="fragment">
+              <p>A set of HOCs</p>
+              <div>
+                <img
+                  src="./images/hocs-list.png" alt=""
+                  style="max-height: 300px; display: inline-block;"
+                />
+                <img
+                  src="./images/helpers-list.png" alt=""
+                  style="max-height: 300px; display: inline-block;"
+                />
+              </div>
+            </div>
+          </section>
+        </section>
+
+        <!-- | -->
+
+        <section id="higher-order-components">
+          <section id="hoc">
+            <p>Higher Order Components</p>
+
+            <pre class="fragment"><code class="javascript">
+import { withRouter } from 'react-router-dom';
+
+withRouter(Component);
+            </code></pre>
+
+            <pre class="fragment"><code class="javascript">
+import { connect } from 'react-redux';
+
+connect(...)(Component);
+            </code></pre>
+          </section>
+
+          <section id="another-hoc">
+            <pre><code class="javascript">
+import { withRouter } from 'react-router-dom';
+import { connect, compose } from 'react-redux';
+import { anotherHOC } from 'another-library';
+...
+
+compose(
+  withRouter,
+  connect(...),
+  anotherHOC,
+  ...
+)(Component);
+            </code></pre>
+          </section>
+
+          <section id="why-hoc">
+            <p>Reasons why you want to use HOC in React</p>
+            <ul>
+              <li class="fragment">small pieces</li>
+              <li class="fragment">functionally shared logic</li>
+              <li class="fragment">nice readability</li>
+              <li class="fragment">just cool and pro</li>
+              <li class="fragment">and...</li>
+            </ul>
+          </section>
+
+          <section id="composition-over-inheritance">
+            <p>composition over inheritance</p>
+
+            <pre><code class="hljs jsx">
+const MyGuitar = compose(
+  withAmplifier,
+  withTuning('bass')('eadg'),
+  withStrings(4),
+  withColor('yellow'),
+)(Body)
+            </code></pre>
+
+            <img
+              src="./images/lego.jpg" alt="Lego oriented programing"
+              style="max-height: 250px;"
+            >
+          </section> 
+          
+          <section id="wrong-way">
+            <pre><code class="jsx">
+class MyGuitar extends Instrument { ... }
+            </code></pre>
+
+            <img class="fragment" src="./images/wrong-way.jpg" alt="Wrong way">
+          </section>
+        </section>
+
+        <!-- | -->
+
+        <section id="coding">
+          <section id="lets-code">
+            <h2>Let's code!</h2>
+            <img
+              src="./images/zap.png" alt="Let's code!"
+              style="max-height: 400px; display: block; margin: 0 auto 1em; border: none; background: none; box-shadow: none;"
+            />
+          </section>
+
+          <section id="ordinary-state-component">
+            <p>Ordinary state component</p>
+            <pre class="fragment"><code class="hljs jsx" style="word-wrap: break-word;">
+class Switch extends Component {
+  state = { isOn: false };
+
+  toggle = () =&gt; {
+    this.setState({ isOn: !this.state.isOn });
+  }
+  
+  render () {
+    return &lt;button onClick={this.toggle}&gt;
+      {this.state.isOn ? 'ON' : 'OFF'}
+    &lt;/button&gt;
+  }
+}
+            </code></pre>
+          </section>
+
+          <section id="ordinary-state-component-sandbox">
+            <iframe class="stretch" src="https://codesandbox.io/embed/5k8wz916jn?hidenavigation=1" style="width:100%; height:500px; border:0; border-radius: 4px; overflow:hidden;" sandbox="allow-modals allow-forms allow-popups allow-scripts allow-same-origin"></iframe>
+          </section>
+
+          <section>
+            <p>Recompose it</p>
+            <pre class="fragment"><code class="hljs jsx" style="word-wrap: break-word;">
+class Switch extends Component {
+  state = { isOn: false };
+
+  toggle = () =&gt; {
+    this.setState({ isOn: !this.state.isOn });
+  }
+  
+  render () {
+    return &lt;button onClick={this.toggle}&gt;
+      {this.state.isOn ? 'ON' : 'OFF'}
+    &lt;/button&gt;
+  }
+}
+            </code></pre>
+          </section>
+
+          <section id="npm-i-recompose">
+            <p>npm i recompose</p>
+            <pre class="fragment"><code class="hljs jsx">
+import { withState, withHandlers } from 'recompose';
+            </code></pre>
+          </section>
+
+          <section id="recomposed-component">
+              <p>recomposed component</p>
+            <pre class="fragment"><code class="hljs jsx">
+const addIsOnState = withState("isOn", "setIsOn", false);
+            </code></pre>
+
+            <pre class="fragment"><code class="hljs jsx">
+const addHandlers = withHandlers({
+  toggle: ({ isOn, setIsOn }) =&gt; () =&gt; setIsOn(!isOn)
+});
+            </code></pre>
+
+            <pre class="fragment"><code class="hljs jsx">
+const SwitchBody = ({ isOn, toggle }) =&gt; (
+  &lt;button onClick={toggle}&gt;
+    {isOn ? 'ON' : 'OFF'}
+  &lt;/button&gt;
+);
+            </code></pre>
+          </section>
+
+          <section id="compose-back">
+            <p>Compose back</p>
+            <pre class="fragment"><code class="hljs jsx">
+addState(addHandlers(SwitchBody));
+            </code></pre>
+          </section>
+
+          <section id="npm-i-recompose-sandbox">
+            <iframe class="stretch" src="https://codesandbox.io/embed/14zp6ozl7q?autoresize=1&hidenavigation=1" style="width:100%; height:500px; border:0; border-radius: 4px; overflow:hidden;" sandbox="allow-modals allow-forms allow-popups allow-scripts allow-same-origin"></iframe>
+          </section>
+
+          <section id="with-state">
+            <p>more state - withState</p>
+            <pre class="fragment"><code class="hljs jsx">
+const addColorState = withState(
+  "color", "setColor", "red",
+);
+            </code></pre>
+
+            <pre class="fragment"><code class="hljs jsx">
+const addIsActiveState = withState(
+  "active", "setActive", false,
+);
+            </code></pre>
+
+            <pre class="fragment"><code class="hljs jsx">
+addColorState(addIsActiveState(SwitchBody));
+            </code></pre>
+          </section>
+
+          <section id="lifecycle">
+            <p>lifecycle</p>
+            <pre class="fragment"><code class="javascript">
+import { lifecycle } from 'recompose';
+
+const withRemoteConfig = lifecycle({
+  componentDidMount() {
+    setTimeout(() =&gt; {
+      this.props.setActive(true);
+    }, 4000);
+    setTimeout(() =&gt; {
+      this.props.setColor("yellow");
+    }, 6000);
+  }
+});
+withRemoteConfig(SwitchBody);
+            </code></pre>
+          </section>
+
+          <section id="spiner">
+            <p>Need a spiner?</p>
+            <pre class="fragment"><code class="javascript">
+// before              
+const SwitchOrLoader = ({ active }) =&gt; (
+  active ? &lt;Switch /&gt; : &lt;Loader /&gt;
+);
+            </code></pre>
+            <pre class="fragment"><code class="javascript">
+// after              
+import { branch, renderComponent } from 'recompose';
+
+const withLoader = branch(
+  ({ active }) =&gt; !active,
+  renderComponent(Loader),
+);
+
+withLoader(SwitchBody);
+            </code></pre>
+          </section>
+
+          <section id="only-update-for-keys">
+            <p>Efficient rendering</p>
+            <pre class="fragment"><code class="javascript">
+// before              
+shouldComponentUpdate(nextProps) {
+  return nextProps.isOn !== this.props.isOn;
+}
+            </code></pre>
+
+            <pre class="fragment"><code class="javascript">
+// after            
+import { onlyUpdateForKeys } from 'recompose';
+
+const addEnergySaving = onlyUpdateForKeys([
+  "active", "isOn"
+]);
+addEnergySaving(SwitchBody);
+            </code></pre>
+          </section>
+
+          <section id="recompose-result">
+            <p>recompose result</p>
+            <iframe class="stretch" src="https://codesandbox.io/embed/72k90wypj" style="width:100%; height:500px; border:0; border-radius: 4px; overflow:hidden;" sandbox="allow-modals allow-forms allow-popups allow-scripts allow-same-origin"></iframe>
+          </section>
+
+          <section id="set-prop-types">
+            <p>setPropTypes</p>
+            <pre class="fragment"><code class="javascript">
+import { setPropTypes } from 'recompose';
+
+const addSwitchTypes = setPropTypes({
+  isOn: PropTypes.bool,
+  active: PropTypes.bool,
+  color: PropTypes.string,
+  setIsOn: PropTypes.func,
+  setActive: PropTypes.func,
+  setColor: PropTypes.func,
+  toggle: PropTypes.func
+});
+
+addSwitchTypes(SwitchBody);
+            </code></pre>
+          </section>
+
+          <section id="rename-props">
+            <p>renameProps</p>
+            <pre class="fragment"><code class="javascript">
+import { renameProps } from 'recompose';
+
+const addFancyNames = renameProps({
+  isOn: "isReallyReallyOn"
+});
+
+renameProps(SwitchBody);
+            </code></pre>
+          </section>
+
+          <section id="to-render-props">
+            <p>toRenderProps</p>
+            <pre class="fragment"><code class="javascript">
+const addProps = withProps(
+  props =&gt; ({ isOff: !props.isOn })
+);
+            </code></pre>
+
+            <pre class="fragment"><code class="javascript">
+const InvertedSwitch = toRenderProps(addProps);
+            </code></pre>
+
+            <pre class="fragment"><code class="javascript">
+&lt;InvertedSwitch isOn={true}&gt;
+  {props =&gt; &lt;p&gt;{props.isOff ? 'OFF': 'ON'}&lt;/p&gt;}
+&lt;/InvertedSwitch&gt;
+              </code></pre>
+            </section>
+        </section>
+
+        <!-- | -->
+
+        <section id="compose">
+          <section id="compose-directions">
+            <p>compose</p>
+            <img
+              class="fragment"
+              src="./images/how-compose-work.png"
+              alt=""
+              style="max-height: 500px; margin: 0 auto; display: block;"
+            >
+          </section>
+
+          <section id="how-compose-work">
+            <p>How?</p>
+            <p class="fragment">pipe</p>
+            <pre class="fragment"><code class="javascript">
+      const Switch = compose(
+        ...
+        c, // -&gt; c(base3)
+        b, // -&gt; b(base2) returns base3
+        a, // -&gt; a(base) returns base2
+      )(base);
+            </code></pre>
+          </section>
+
+          <section id="creating-hoc">
+            <p>How to create your own HOC?</p>
+            <pre class="fragment"><code class="javascript">
+      const withTuning = function () {
+        return function () {
+          return function () {
+            ...
+          }
+        }
+      }
+            </code></pre>
+
+            <pre class="fragment"><code class="javascript">
+      const withTuning = () => () => () => { ... }
+            </code></pre>
+            <p class="fragment">currying</p>
+          </section>
+
+          <section id="pass-base-component">
+            <p>Pass base component as last argument</p>
+            <pre class="fragment"><code class="javascript">
+const withTuning = () => () => (BaseComponent) => { ... }
+            </code></pre>
+          </section>
+
+          <section id="pass-props">
+            <p>Pass props</p>
+            <pre><code class="javascript">
+const withTuning = (type) => (tones) => (BaseComponent) => { ... }
+            </code></pre>
+          </section>
+
+          <section id="call-multiple-times">
+            <p>Call multiple times</p>
+            <pre class="fragment"><code class="javascript">
+const withBassTuning = withTuning('bass');
+// returns function
+
+const withStandardBassTuning = withBassTuning('eadg');
+// returns function
+
+withStandardBassTuning(GuitarBody);
+            </code></pre>
+
+            <div class="fragment">
+              <p>Shorter</p>
+              <pre><code class="javascript">
+withTuning('bass')('eadg')(GuitarBody);
+              </code></pre>
+            </div>
+          </section>
+
+          <section id="put-to-compose">
+            <p>Put to compose</p>
+            <pre class="fragment"><code class="javascript">
+const MyGuitar = compose(
+  withAmplifier,
+  withTuning('bass')('eadg'), // I'm here
+  withStrings(4),
+  withColor('yellow'),
+)(GuitarBody)
+            </code></pre>
+          </section>
+
+          <section id="elegant">
+            <p>Is it elegant?</p>
+          </section>
+
+          <section id="compose-in-redux">
+            <p>compose in redux</p>
+            <img 
+              class="fragment"
+              src="./images/compose-redux-github.png"
+              style="max-height: 500px; display: block; margin: 0 auto;"
+              alt=""
+            />
+          </section>
+
+          <section id="compose-in-lodash">
+            <p>compose in lodash (alias to reverted flow)</p>
+            <img
+              class="fragment"
+              src="./images/compose-lodash-github.png" alt=""
+              style="max-height: 500px; display: block; margin: 0 auto;"
+            />
+          </section>
+
+          <section id="compose-in-recompose">
+            <p>compose in recompose</p>
+            <img
+              class="fragment"
+              src="./images/compose-recompose-github.png" alt=""
+              style="max-height: 500px; display: block; margin: 0 auto;"
+            />
+          </section>
+        </section>
+
+        <!-- | -->
+
+        <section id="why-recompose">
+          <section id="why-recompose-reasons">
+            <h1>Why recompose?</h1>
+            <ul>
+              <li class="fragment">no "class" anymore</li>
+              <li class="fragment">less code to write, save time</li>
+              <li class="fragment">functional components are welcome</li>
+              <li class="fragment">keep logic away of view</li>
+              <li class="fragment">all HOC's reasons</li>
+            </ul>
+            <p class="fragment">Sounds familiar?</p>
+          </section>         
+
+          <section id="i-want-to-use-hooks">
+            <img 
+              src="./images/i-want-to-use-hooks.jpg" alt=""
+              style="max-height: 600px; display: block; margin: 0 auto;"
+            />
+          </section>
+
+          <section id="mix-hooks">
+            <p>You can mix hooks and recompose.</p>
+            <img
+              class="fragment"
+              src="./images/hooks-vs-recompose.png" alt="Hooks vs recompose"
+              style="max-height: 400px; display: block; margin: 0 auto 1em;"
+            />
+          </section>
+        </section>
+
+        <!-- | -->
+
+        <section id="components-streams">
+            <section id="components-streams-cover">
+            <p>Components Streams</p>
+            <p class="fragment">RxJS Support</p>
+          </section>
+
+          <section id="components-streams-example">
+            <p>swapi example</p>
+            <iframe class="stretch" src="https://codesandbox.io/embed/y04krj6w3v" style="width:100%; height:500px; border:0; border-radius: 4px; overflow:hidden;" sandbox="allow-modals allow-forms allow-popups allow-scripts allow-same-origin"></iframe>
+          </section>
+        </section>
+
+        <!-- | -->
+
+        <section id="bundle">
+          <section id="bundle-cover">
+            <p>Bundle</p>
+          </section>
+
+          <section id="bundle-vendors">
+            <p>Vendors</p>
+            <img
+              src="./images/import-cost.png" alt=""
+              style="max-height: 500px; display: block; margin: 0 auto;"
+            />
+          </section>
+
+          <section id="full-recompose-import">
+            <p>Full recompose import</p>
+            <img
+              src="./images/full-recompose-import-stat.png" alt=""
+              style="max-height: 500px; display: block; margin: 1em auto;"
+            />
+            <img
+              class="fragment"
+              src="./images/react-import-stat.png" alt=""
+              style="max-height: 500px; display: block; margin: 1em auto;"
+            />
+          </section>
+
+          <section id="used-hocs-import">
+            <p>Used HOCs import</p>
+            <img
+              src="./images/every-single-import-recompose-stat.png" alt=""
+              style="max-height: 500px; display: block; margin: 1em auto;"
+            />
+          </section>
+
+          <section id="source-map-explorer">
+            <p>source-map-explorer</p>
+            <img
+              src="./images/source-map-explorer.png" alt=""
+              style="max-height: 500px; display: block; margin: 0 auto;"
+            />
+          </section>
+
+          <section id="source-map-explorer-react">
+            <p>1.49 KB</p>
+            <img
+              src="./images/react-bundle.png" alt=""
+              style="max-height: 500px; display: block; margin: 0 auto;"
+            />
+          </section>
+
+          <section id="source-map-explorer-recompose">
+            <p>1.37 KB</p>
+            <img
+              src="./images/recompose-bundle.png" alt=""
+              style="max-height: 500px; display: block; margin: 0 auto;"
+            />
+          </section>
+
+          <section id="source-map-explorer-compare">
+            <p>1.49 KB - React only</p>
+            <p>1.37 KB - React + recompose</p>
+          </section>
+
+          <section id="tev-tools">
+            <p>React Dev Tools</p>
+            <p class="fragment">Every single HOC is secret container component</p>
+            <img
+              class="fragment"
+              src="./images/react-dev-tools-nesting-issue.png" alt="Nesting issue in React Dev Tools"
+              style="max-height: 500px; display: block; margin: 0 auto;"
+            />
+          </section>       
+
+          <section id="back-to-2016">
+            <p>a long, long time ago...</p>
+            <p class="fragment">go back to 2016...</p>
+          </section>
+          
+          <section id="create-eager-factory">
+            <p>createEagerFactory</p>
+            <ul>
+              <li class="fragment">is it a function?</li>
+              <li class="fragment">is it a class component?</li>
+              <li class="fragment">has it got context?</li>
+              <li class="fragment">has it got children?</li>
+              <li class="fragment">is the environment production?</li>
+            </ul>
+          </section>
+
+          <section id="components-squashing">
+            <p>components squashing</p>
+            <img
+              src="./images/andrew-clark-squashing-released.png"
+              alt="Components squashing added to recompose"
+              style="max-height: 500px; display: block; margin: 0 auto;"
+            />
+          </section>
+
+          <section id="components-squashing-code">
+            <p>createEagerFactory -> createHocFromMiddleware</p>
+            <img
+              class="fragment"
+              src="./images/create-eager-factory-to-squashing.png" alt=""
+              style="max-height: 500px; display: block; margin: 0 auto;"
+            />
+          </section>
+
+          <section id="joined-facebook">
+            <p>3 month later<br />Andrew Clark joined Facebook</p>
+            <img
+              src="./images/andrew-clark-joined-facebook.png" alt="Andrew Clark joined Facebook"
+              style="max-height: 500px; display: block; margin: 0 auto;"
+            />
+          </section>
+
+          <section id="recompose-today">
+            <p>today...</p>
+            <p class="fragment">createHocFromMiddleware -> createFactory</p>
+            <img
+              class="fragment"
+              src="./images/create-factory-now.png" alt=""
+              style="max-height: 500px; display: block; margin: 0 auto;"
+            />
+          </section>
+        </section>
+
+        <!-- | -->
+
+        <section id="recompose-recap">
+          <section id="recompose-recap-list">
+            <p>Recap</p>
+            <ul>
+              <li class="fragment">HOC is often a regular function</li>
+              <li class="fragment">statless component<br />
+                doesn't have access to context</li>
+              <li class="fragment">a real component is created<br />
+                only when it's necessary</li>
+            </ul>
+          </section>
+
+          <section id="recompose-github">
+            <img
+              src="./images/recompose-github.png" alt=""
+              style="max-height: 500px; display: block; margin: 0 auto;"
+            />
+          </section>
+
+          <section id="recompose-npm">
+            <img
+              src="./images/recompose-npm.png" alt=""
+              style="max-height: 500px; display: block; margin: 0 auto;"
+            />
+          </section>
+
+          <section id="new-feature">
+            <img
+              src="./images/new-feature.jpg" alt=""
+              style="max-height: 400px; display: block; margin: 0 auto 1em;"
+            />
+          </section>
+        </section>
+
+        <!-- | -->
+
+        <section id="the-end">
+          <p>
+            <h2>Thank you!</h2>
+            <img
+              src="./images/lebrande.jpg" alt="Jakub Pusiak - lebrande"
+              style="max-height: 200px; display: block; margin: 0 auto 1em; border-radius: 100%;"
+            />
+            🙅‍♂️ Jakub Pusiak ️🤦‍♂️ @le_brande 🙆‍♂ #intive
+          </p>
+        </section>
+			</div>
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+			// More info about config & dependencies:
+			// - https://github.com/hakimel/reveal.js#configuration
+			// - https://github.com/hakimel/reveal.js#dependencies
+			Reveal.initialize({
+        history: true,
+				dependencies: [
+					{ src: 'plugin/markdown/marked.js' },
+					{ src: 'plugin/markdown/markdown.js' },
+					{ src: 'plugin/notes/notes.js', async: true },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+				]
+			});
+    </script>
+	</body>
+</html>
