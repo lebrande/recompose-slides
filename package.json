@@ -1,7 +1,7 @@
 {
-  "name": "Recompose",
+  "name": "recompose-slides",
   "version": "0.1.0",
-  "description": "Recompose - HOC everywhere",
+  "description": "Recompose - HOCs everywhere",
   "main": "js/reveal.js",
   "scripts": {
     "test": "grunt test",
